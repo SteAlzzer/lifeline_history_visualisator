@@ -49,20 +49,22 @@ class GameTree(object):
             self.prev_node = self.game_tree.create_node(
                              'Начало', data=Message('Начало', 2))
 
-    def add_message(self, message, message_type):
+    def add_message(self, message, message_type, parent=None):
+        parent_for_message = parent.identifier if parent else self.prev_node.identifier
         if self.__find_same_message(message):
             pass
         else:
             msg = Message(message, message_type)
             self.prev_node = self.game_tree.create_node(
-                             data=msg, parent=self.prev_node.identifier)
+                             data=msg, parent=parent_for_message)
 
     def __find_same_message(self, message):
         pass
 
     def add_user_reply(self, message1, message2):
-        self.add_message(message1, 3)
-        self.add_message(message2, 3)
+        prev = self.prev_node
+        self.add_message(message1, 3, parent=prev)
+        self.add_message(message2, 3, parent=prev)
 
     def save_tree(self, savefile):
         with open(savefile, 'w', newline='') as save:
@@ -112,17 +114,16 @@ class GameTree(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['message'])
+    parser.add_argument('action', choices=['message', 'reply'])
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
     save_file = os.path.abspath(os.path.realpath(SAVE_FILE))
     if not os.path.isfile(save_file):
         print('Save file not found. Let\'s make a new one, buddy')
-        with open(save_file, 'w') as _:
-            pass
-
-    game = GameTree(save_file)
+        game = GameTree()
+    else:
+        game = GameTree(save_file)
 
     if args.action == 'message':
         if not len(args.args):
@@ -136,6 +137,11 @@ if __name__ == '__main__':
             message_type = args.args[1]
         game.add_message(message_text, message_type)
 
+    if args.action == 'reply':
+        if not len(args.args) == 2:
+            print('There should be `choose1` and `choose2. The second will be choosed')
+            exit(-1)
+        game.add_user_reply(args.args[0], args.args[1])
+
     game.visualize()
-    # game.debug_visualize()
-    # game.save_tree(save_file)
+    game.save_tree(save_file)
