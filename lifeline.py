@@ -28,7 +28,7 @@ class Message(object):
         self.message_display = self.make_message_display()
 
     def __str__(self):
-        return self.make_message_display()
+        return str(self.make_message_display())
 
     def make_message_display(self):
         if self.type == 1:
@@ -44,10 +44,7 @@ class GameTree(object):
         self.game_tree = Tree()
 
         if savefile:
-            self.load_tree(savefile)
-            self.prev_node = self.game_tree.root
-            self.prev_node = self.game_tree.create_node(
-                             'Начало', data=Message('Начало', 2))  # todo: remove that line when save-load will be done
+            self.prev_node = self.load_tree(savefile)
         else:
             self.prev_node = self.game_tree.create_node(
                              'Начало', data=Message('Начало', 2))
@@ -72,13 +69,34 @@ class GameTree(object):
             save_writer = csv.writer(save, quoting=csv.QUOTE_NONNUMERIC)
             for node_id in self.game_tree.expand_tree():
                 list_to_write = [node_id, self.game_tree[node_id].fpointer,
+                                 self.game_tree[node_id].bpointer,
                                  self.game_tree[node_id].data.message_text,
                                  self.game_tree[node_id].data.type]
                 save_writer.writerow(list_to_write)
             save_writer.writerow([self.prev_node.identifier])
 
     def load_tree(self, savefile):
-        pass
+        print('Loading...')
+        with open(savefile, newline='') as save:
+            save_reader = csv.reader(save)
+            self.game_tree = Tree()
+            for row in save_reader:
+                if len(row) == 1:
+                    return self.game_tree[row[0]]
+                node_id = row[0]
+                parent = row[2] if row[2] else None
+                msg = Message(row[3], int(row[4]))
+                self.game_tree.create_node(identifier=node_id, parent=parent, data=msg)
+
+    def debug_visualize(self):
+        print('----DEBUG----')
+        for node_id in self.game_tree.expand_tree():
+            print('node_id:', node_id)
+            print('parent:', self.game_tree[node_id].bpointer)
+            print('childen:', self.game_tree[node_id].fpointer)
+            print('message:', self.game_tree[node_id].data)
+        print('----DEBUG----')
+
 
     def visualize(self):
         '''
@@ -94,7 +112,7 @@ class GameTree(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['message', 'reply', 'save', 'show'])
+    parser.add_argument('action', choices=['message'])
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
@@ -117,8 +135,7 @@ if __name__ == '__main__':
             message_text = args.args[0]
             message_type = args.args[1]
         game.add_message(message_text, message_type)
-        game.add_message(message_text, message_type)
-        game.add_message(message_text, 3)
 
     game.visualize()
-    game.save_tree(save_file)
+    # game.debug_visualize()
+    # game.save_tree(save_file)
