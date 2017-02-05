@@ -2,8 +2,6 @@ import argparse
 import os
 from treelib import Tree
 
-
-
 # tree = Tree()
 # n1 = tree.create_node('Root')
 # print(tree.root)
@@ -15,83 +13,91 @@ from treelib import Tree
 
 SAVE_FILE = './save'
 
+
 class Message(object):
-	'''
-	message_type:
-		1 - Basic Tyler message
-		2 - [System message]
-		3 - User reply
-	'''
-	def __init__(self, message_text, message_type):
-		self.message_text = message_text
-		self.type = message_type
+    '''
+    message_type:
+        1 - Basic Tyler message
+        2 - [System message]
+        3 - User reply
+    '''
+    def __init__(self, message_text, message_type):
+        self.message_text = message_text
+        self.type = message_type
 
 
 class GameTree(object):
-	def __init__(self, savefile=None):
-		self.game_tree = Tree()
+    def __init__(self, savefile=None):
+        self.game_tree = Tree()
 
-		if savefile:
-			self.load_tree(savefile)
-			self.prev_node = self.game_tree.root
-			self.prev_node = self.game_tree.create_node('Начало', data=Message('Начало', 2)) #  todo: remove that line when save-load will be done
-		else:
-			self.prev_node = self.game_tree.create_node('Начало', data=Message('Начало', 2))
-	def add_message(self, message, message_type):
-		if self.__find_same_message(message):
-			pass
-		else:
-			msg = Message(message, message_type)
-			self.prev_node = self.game_tree.create_node(data=msg, parent=self.prev_node.identifier)
+        if savefile:
+            self.load_tree(savefile)
+            self.prev_node = self.game_tree.root
+            self.prev_node = self.game_tree.create_node(
+                             'Начало', data=Message('Начало', 2))  # todo: remove that line when save-load will be done
+        else:
+            self.prev_node = self.game_tree.create_node(
+                             'Начало', data=Message('Начало', 2))
 
-	def __find_same_message(self, message):
-		pass
-	def add_user_reply(self, message1, message2):
-		self.add_message(message1, 3)
-		self.add_message(message2, 3)
+    def add_message(self, message, message_type):
+        if self.__find_same_message(message):
+            pass
+        else:
+            msg = Message(message, message_type)
+            self.prev_node = self.game_tree.create_node(
+                             data=msg, parent=self.prev_node.identifier)
 
-	def save_tree(self, savefile):
-		# self.game_tree.save2file(savefile)
-		pass
-	def load_tree(self, savefile):
-		pass
-	def visualize(self):
-		'''
-		ascii
-		ascii-ex
-		ascii-emh
-		ascii-exr
-		ascii-em
-		ascii-emv
-		'''
-		self.game_tree.show(line_type='ascii', data_property='message_text')
+    def __find_same_message(self, message):
+        pass
+
+    def add_user_reply(self, message1, message2):
+        self.add_message(message1, 3)
+        self.add_message(message2, 3)
+
+    def save_tree(self, savefile):
+        pass
+
+    def load_tree(self, savefile):
+        pass
+
+    def visualize(self):
+        '''
+        ascii
+        ascii-ex
+        ascii-emh
+        ascii-exr
+        ascii-em
+        ascii-emv
+        '''
+        self.game_tree.show(line_type='ascii', data_property='message_text')
+
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
-	parser.add_argument('action', choices=['message', 'reply', 'save', 'show'])
-	parser.add_argument('args', nargs=argparse.REMAINDER)
-	args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('action', choices=['message', 'reply', 'save', 'show'])
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
 
-	save_file = os.path.abspath(os.path.realpath(SAVE_FILE))
-	if not os.path.isfile(save_file):
-		print('Save file not found. Let\'s make a new one, buddy')
-		with open(save_file, 'w') as _:
-			pass
+    save_file = os.path.abspath(os.path.realpath(SAVE_FILE))
+    if not os.path.isfile(save_file):
+        print('Save file not found. Let\'s make a new one, buddy')
+        with open(save_file, 'w') as _:
+            pass
 
-	game = GameTree(save_file)
+    game = GameTree(save_file)
 
-	if args.action == 'message':
-		if not len(args.args):
-			print('There should be `message_text` and `message_type`')
-			exit(-1)
-		if len(args.args) == 1:
-			message_text = args.args[0]
-			message_type = 1
-		elif len(args.args) == 2:
-			message_text = args.args[0]
-			message_type = args.args[1]
-		game.add_message(message_text, message_type)
-		game.add_message(message_text, message_type)
+    if args.action == 'message':
+        if not len(args.args):
+            print('There should be `message_text` and `message_type`')
+            exit(-1)
+        if len(args.args) == 1:
+            message_text = args.args[0]
+            message_type = 1
+        elif len(args.args) == 2:
+            message_text = args.args[0]
+            message_type = args.args[1]
+        game.add_message(message_text, message_type)
+        game.add_message(message_text, message_type)
 
-	game.visualize()
-	game.save_tree(save_file)
+    game.visualize()
+    game.save_tree(save_file)
