@@ -23,16 +23,11 @@ from treelib import Tree
 # 		pass
 
 
-tree = Tree()
-n1 = tree.create_node('Root')
-print(tree.root)
-n2 = tree.create_node('Howdy', 'hd', parent=tree.root)
-print('----')
-print(n1.identifier)
-print(n1.tag)
-
-tree.show()
-
-
-for node in tree:
-	print(node)
+# tree = Tree()
+# n1 = tree.create_node('Root')
+# print(tree.root)
+# # n2 = tree.create_node('Howdy', 'hd', parent=tree.root)
+# prev = tree.create_node('Hello', parent=n1.identifier)
+# tree.create_node('Hello', parent=n1.identifier)
+# prev = tree.create_node('Hello', parent=prev.identifier)
+# tree.show(line_type='ascii')
