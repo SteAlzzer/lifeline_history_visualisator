@@ -1,5 +1,6 @@
 import argparse
 import os
+import csv
 from treelib import Tree
 
 # tree = Tree()
@@ -67,25 +68,14 @@ class GameTree(object):
         self.add_message(message2, 3)
 
     def save_tree(self, savefile):
-        # print(self.game_tree.to_dict(with_data=True))
-        # with open(savefile, 'w') as save_file:
-        # print('root:', self.game_tree.root)
-        # queue = [node for node in self.game_tree[self.game_tree.root].fpointer]
-        # print('>>', queue)
-        with open(savefile, 'w') as save:
+        with open(savefile, 'w', newline='') as save:
+            save_writer = csv.writer(save, quoting=csv.QUOTE_NONNUMERIC)
             for node_id in self.game_tree.expand_tree():
-                # print(self.game_tree[node_id].data)
-                # line_to_write = 'id, children, message_text, message_type'
-                line_to_write = '{}, {}, {}, {}\n'.format(
-                                 node_id, self.game_tree[node_id].fpointer,
+                list_to_write = [node_id, self.game_tree[node_id].fpointer,
                                  self.game_tree[node_id].data.message_text,
-                                 self.game_tree[node_id].data.type)
-                save.write(line_to_write)
-                # print('id:', node_id)
-                # print('children:', self.game_tree[node_id].fpointer)
-                # print('message:', self.game_tree[node_id].data.message_text)
-                # print('message_type:', self.game_tree[node_id].data.type)
-
+                                 self.game_tree[node_id].data.type]
+                save_writer.writerow(list_to_write)
+            save_writer.writerow([self.prev_node.identifier])
 
     def load_tree(self, savefile):
         pass
