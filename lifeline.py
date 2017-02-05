@@ -1,6 +1,7 @@
 import argparse
 import os
 import csv
+import re
 from treelib import Tree
 
 # tree = Tree()
@@ -111,6 +112,16 @@ class GameTree(object):
         '''
         self.game_tree.show(line_type='ascii', data_property='message_display')
 
+    def save_visualization(self, save_file):
+        self.game_tree.save2file('./tmp')
+        with open(save_file, 'w', encoding='utf-8') as visualization:
+            for line in open('./tmp', encoding='utf-8'):
+                found_ids = re.findall('[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}', line)
+                for found_id in found_ids:
+                    msg = self.game_tree[found_id].data.message_display
+                    line = line.replace(found_id, msg)
+                visualization.write(line)
+        os.remove('./tmp')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -144,4 +155,5 @@ if __name__ == '__main__':
         game.add_user_reply(args.args[0], args.args[1])
 
     game.visualize()
-    game.save_tree(save_file)
+    # game.save_tree(save_file)
+    game.save_visualization('./vis1')
