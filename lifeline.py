@@ -24,6 +24,18 @@ class Message(object):
     def __init__(self, message_text, message_type):
         self.message_text = message_text
         self.type = message_type
+        self.message_display = self.make_message_display()
+
+    def __str__(self):
+        return self.make_message_display()
+
+    def make_message_display(self):
+        if self.type == 1:
+            return self.message_text
+        elif self.type == 2:
+            return '[{}]'.format(self.message_text)
+        elif self.type == 3:
+            return '({})'.format(self.message_text)
 
 
 class GameTree(object):
@@ -55,7 +67,25 @@ class GameTree(object):
         self.add_message(message2, 3)
 
     def save_tree(self, savefile):
-        pass
+        # print(self.game_tree.to_dict(with_data=True))
+        # with open(savefile, 'w') as save_file:
+        # print('root:', self.game_tree.root)
+        # queue = [node for node in self.game_tree[self.game_tree.root].fpointer]
+        # print('>>', queue)
+        with open(savefile, 'w') as save:
+            for node_id in self.game_tree.expand_tree():
+                # print(self.game_tree[node_id].data)
+                # line_to_write = 'id, children, message_text, message_type'
+                line_to_write = '{}, {}, {}, {}\n'.format(
+                                 node_id, self.game_tree[node_id].fpointer,
+                                 self.game_tree[node_id].data.message_text,
+                                 self.game_tree[node_id].data.type)
+                save.write(line_to_write)
+                # print('id:', node_id)
+                # print('children:', self.game_tree[node_id].fpointer)
+                # print('message:', self.game_tree[node_id].data.message_text)
+                # print('message_type:', self.game_tree[node_id].data.type)
+
 
     def load_tree(self, savefile):
         pass
@@ -69,7 +99,7 @@ class GameTree(object):
         ascii-em
         ascii-emv
         '''
-        self.game_tree.show(line_type='ascii', data_property='message_text')
+        self.game_tree.show(line_type='ascii', data_property='message_display')
 
 
 if __name__ == '__main__':
@@ -98,6 +128,7 @@ if __name__ == '__main__':
             message_type = args.args[1]
         game.add_message(message_text, message_type)
         game.add_message(message_text, message_type)
+        game.add_message(message_text, 3)
 
     game.visualize()
     game.save_tree(save_file)
