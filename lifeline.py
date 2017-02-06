@@ -14,7 +14,7 @@ from treelib import Tree
 # tree.show(line_type='ascii')
 
 SAVE_FILE = './save'
-
+MESSAGE_DIFFERENCE_DELTA = 5
 
 class Message(object):
     '''
@@ -52,15 +52,26 @@ class GameTree(object):
 
     def add_message(self, message, message_type, parent=None):
         parent_for_message = parent.identifier if parent else self.prev_node.identifier
-        if self.__find_same_message(message):
+        if self.__find_same_message_in_tree(message):
             pass
         else:
             msg = Message(message, message_type)
             self.prev_node = self.game_tree.create_node(
                              data=msg, parent=parent_for_message)
 
-    def __find_same_message(self, message):
-        pass
+    def __find_same_message_in_tree(self, message):
+        for node_id in self.game_tree.expand_tree():
+            msg = self.game_tree[node_id].data.message_text
+            if self.__are_messages_similar(message, msg):
+                print('WooooooooW')
+                exit(-1)
+
+    def __are_messages_similar(self, message1, message2):
+        count = sum(1 for a, b in zip(message1, message2) if a != b) \
+                + abs(len(message1) - len(message2))
+        if MESSAGE_DIFFERENCE_DELTA > count:
+            return True
+        return False
 
     def add_user_reply(self, message1, message2):
         prev = self.prev_node
@@ -68,7 +79,7 @@ class GameTree(object):
         self.add_message(message2, 3, parent=prev)
 
     def save_tree(self, savefile):
-        with open(savefile, 'w', newline='') as save:
+        with open(savefile, 'w', newline='', encoding='utf-8') as save:
             save_writer = csv.writer(save, quoting=csv.QUOTE_NONNUMERIC)
             for node_id in self.game_tree.expand_tree():
                 list_to_write = [node_id, self.game_tree[node_id].fpointer,
@@ -80,7 +91,7 @@ class GameTree(object):
 
     def load_tree(self, savefile):
         print('Loading...')
-        with open(savefile, newline='') as save:
+        with open(savefile, newline='', encoding='utf-8') as save:
             save_reader = csv.reader(save)
             self.game_tree = Tree()
             for row in save_reader:
@@ -125,7 +136,7 @@ class GameTree(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('action', choices=['message', 'reply'])
+    parser.add_argument('action', choices=['message', 'reply', 'show'])
     parser.add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
 
@@ -147,13 +158,14 @@ if __name__ == '__main__':
             message_text = args.args[0]
             message_type = args.args[1]
         game.add_message(message_text, message_type)
+        game.save_tree(save_file)
 
     if args.action == 'reply':
         if not len(args.args) == 2:
             print('There should be `choose1` and `choose2. The second will be choosed')
             exit(-1)
         game.add_user_reply(args.args[0], args.args[1])
+        game.save_tree(save_file)
 
     game.visualize()
-    # game.save_tree(save_file)
-    game.save_visualization('./vis1')
+    # game.save_visualization('./vis1')
